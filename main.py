@@ -3,11 +3,11 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import sys
-import os
+import os, time
 import requests
 import json
 from pytube import YouTube, Playlist
-from pytube.cli import on_progress
+#from pytube.cli import on_progress
 import re
 import urllib.request
 
@@ -172,7 +172,7 @@ class windows(QWidget):
     def outputname(self):
         print("output name")
         self.button.show()
-        self.progressBar.show()
+        #self.progressBar.show()
 
     def edited(self, a):
         #print('editied')
@@ -253,6 +253,7 @@ class windows(QWidget):
         self.website.setCurrentIndex(0)
         self.type.clear()
         self.sorty.clear()
+        #self.progressBar.hide()
         #self.value.setText = ''
         self.input = ''
 
@@ -265,8 +266,14 @@ class windows(QWidget):
             download_percentage = readed_data * 100 / totalsize
             self.progressBar.setValue(download_percentage)
             QApplication.processEvents()
-        else:
-            self.progressBar.hide()
+        #else:
+        #    self.progressBar.hide()
+    
+    #def youtube_progress(self, stream, chunk, remain):
+        #remaining = (100 * (self.filesize - remain)) / self.filesize
+        #self.progressBar.setValue(remaining)
+            #QApplication.processEvents()
+        #self.progressBar.hide()
     
     def request_reddit(self, i):
         response = requests.get(i, headers=headers)
@@ -333,7 +340,6 @@ class windows(QWidget):
                 print(response)
 
     def Download(self):
-        print(self.input2)
         print("start downloading")
         if self.type_data == 'video':
             if len(self.input2) == 0:
@@ -347,10 +353,11 @@ class windows(QWidget):
             if self.website_data == 'youtube':
                 while(True):
                     try:
-                        response = YouTube(self.input, on_progress_callback=self.Handle_Progress).streams.filter(progressive=True, file_extension='mp4').order_by(
-                            'resolution').first().download(filename=save_loc)
+                        #response = YouTube(self.input, on_progress_callback=self.youtube_progress)
+                        response = YouTube(self.input)
+                        self.filesize = response.filesize
+                        response.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first().download(filename=save_loc)
                         print(response)
-                        break
                     except:
                         continue
 
@@ -385,9 +392,9 @@ class windows(QWidget):
             if self.sorty == 'top':
                 url = 'https://www.reddit.com/r/{0}/top.json?sort=top&t=all'.format(self.input)
             else:
-                url = 'https://www.reddit.com/r/{0}/.json?'.format(self.input)
+                url = 'https://www.reddit.com/r/{0}.json?'.format(self.input)
             
-            response = self.request_reddit(url, self.input)
+            response = self.request_reddit(url)
 
         if self.type_data == 'playlist':
             print('playlist')
@@ -396,16 +403,26 @@ class windows(QWidget):
             playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")    
             print(len(playlist.video_urls))    
             for url in playlist.video_urls:
-                print(url)    
-            for video in playlist.videos:
+                print(url)
+                try:
+                    response = YouTube(url)
+                    self.filesize = response.filesize
+                    response.streams.filter(type='video',progressive=True, file_extension='mp4').order_by('resolution').desc().first()
+                    response.download(DOWNLOAD_DIR)
+                    print(response)
+                except:
+                    response = YouTube(url)
+                    self.filesize = response.filesize
+                    response.streams.filter(type='video',progressive=True, file_extension='mp4').order_by('resolution').desc().first().download(DOWNLOAD_DIR)
+                    print(response)
+            """for video in playlist.videos:
                 print('downloading : {} with url : {}'.format(video.title, video.watch_url))
                 video.streams.\
                     filter(type='video', progressive=True, file_extension='mp4').\
                     order_by('resolution').\
                     desc().\
                     first().\
-                    download(DOWNLOAD_DIR, self.Handle_Progress)
-        self.progressBar.hide()
+                    download(DOWNLOAD_DIR)"""
         self.refresh()
 
 
