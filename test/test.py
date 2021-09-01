@@ -71,7 +71,7 @@ with open('download-gfycat.mp4', 'wb') as file:
 
 """
 # youtube
-url = 'https://www.youtube.com/watch?v=Ov0YGGSY6gY&ab_channel=T-Series'
+url = 'https://www.youtube.com/watch?v=I99BkX3sYa0&ab_channel=ShiroMaster%E2%98%86OriginalSoundtrack'
 
 response = YouTube(url).streams.filter(progressive=True, file_extension='mp4').order_by('resolution').first().download(filename='abc.mp4')
 print(response)

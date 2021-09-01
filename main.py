@@ -25,6 +25,7 @@ class windows(QWidget):
         self.sort_data = ''
         self.website_data = ''
         self.input = ''
+        self.input2 = ''
         self.count = 0
         self.input20 = ''
 
